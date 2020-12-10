@@ -20,7 +20,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		DF40E3DF258247400094FECD /* VideoToolboxCompression-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VideoToolboxCompression-Bridging-Header.h"; sourceTree = "<group>"; };
 		DF40E3E0258247400094FECD /* Base.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Base.lproj; path = VideoToolboxCompression/Base.lproj; sourceTree = "<group>"; };
 		DF40E3E1258247400094FECD /* common.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = common.swift; path = VideoToolboxCompression/common.swift; sourceTree = "<group>"; };
 		DF40E3E2258247400094FECD /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = VideoToolboxCompression/AppDelegate.swift; sourceTree = "<group>"; };
@@ -28,6 +27,7 @@
 		DF40E3E4258247400094FECD /* CVPixelBuffer+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CVPixelBuffer+Extension.swift"; path = "VideoToolboxCompression/CVPixelBuffer+Extension.swift"; sourceTree = "<group>"; };
 		DF40E3E5258247400094FECD /* MediaUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaUtil.swift; path = VideoToolboxCompression/MediaUtil.swift; sourceTree = "<group>"; };
 		DF40E3E6258247400094FECD /* CameraUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CameraUtil.swift; path = VideoToolboxCompression/CameraUtil.swift; sourceTree = "<group>"; };
+		DF40E3F1258248DC0094FECD /* VideoToolboxCompression-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VideoToolboxCompression-Bridging-Header.h"; sourceTree = "<group>"; };
 		F210EAE71F3EE212006E9756 /* VideoToolboxCompression.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoToolboxCompression.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F210EAEF1F3EE212006E9756 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		F210EAF11F3EE212006E9756 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -49,19 +49,19 @@
 		F210EADE1F3EE212006E9756 = {
 			isa = PBXGroup;
 			children = (
-				DF40E3E2258247400094FECD /* AppDelegate.swift */,
 				DF40E3E0258247400094FECD /* Base.lproj */,
-				DF40E3E6258247400094FECD /* CameraUtil.swift */,
+				DF40E3F1258248DC0094FECD /* VideoToolboxCompression-Bridging-Header.h */,
 				DF40E3E1258247400094FECD /* common.swift */,
-				DF40E3E4258247400094FECD /* CVPixelBuffer+Extension.swift */,
+				DF40E3E6258247400094FECD /* CameraUtil.swift */,
 				DF40E3E5258247400094FECD /* MediaUtil.swift */,
+				DF40E3E2258247400094FECD /* AppDelegate.swift */,
 				DF40E3E3258247400094FECD /* ViewController.swift */,
+				DF40E3E4258247400094FECD /* CVPixelBuffer+Extension.swift */,
 				F210EAEE1F3EE212006E9756 /* Main.storyboard */,
 				F210EAF11F3EE212006E9756 /* Assets.xcassets */,
 				F210EAF31F3EE212006E9756 /* LaunchScreen.storyboard */,
 				F210EAF61F3EE212006E9756 /* Info.plist */,
 				F210EAE81F3EE212006E9756 /* Products */,
-				DF40E3DF258247400094FECD /* VideoToolboxCompression-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
