@@ -22,7 +22,6 @@ fileprivate var NALUHeader: [UInt8] = [0, 0, 0, 1]
 let H265 = true
 var frameCount = 0
 
-
 // 事实上，使用 VideoToolbox 硬编码的用途大多是推流编码后的 NAL Unit 而不是写入到本地一个 H.264 文件
 // 如果你想保存到本地，使用 AVAssetWriter 是一个更好的选择，它内部也是会硬编码的
 func compressionOutputCallback(outputCallbackRefCon: UnsafeMutableRawPointer?,
@@ -68,129 +67,25 @@ func compressionOutputCallback(outputCallbackRefCon: UnsafeMutableRawPointer?,
     let vc: ViewController = Unmanaged.fromOpaque(outputCallbackRefCon!).takeUnretainedValue()
     
     print("encoded frame: \(frameCount)")
-    if let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, true) {
-        print("attachments: \(attachments)")
-        
-        let rawDic: UnsafeRawPointer = CFArrayGetValueAtIndex(attachments, 0)
-        let dic: CFDictionary = Unmanaged.fromOpaque(rawDic).takeUnretainedValue()
-        
-        // if not contains means it's an IDR frame
-        let keyFrame = !CFDictionaryContainsKey(dic, Unmanaged.passUnretained(kCMSampleAttachmentKey_NotSync).toOpaque())
-        if keyFrame {
-            print("IDR frame")
-            
-            // sps
-            let format = CMSampleBufferGetFormatDescription(sampleBuffer)
-            var spsSize: Int = 0
-            var spsCount: Int = 0
-            var nalHeaderLength: Int32 = 0
-            var sps: UnsafePointer<UInt8>?
-            var status: OSStatus
-            if H265 {
-                // HEVC
-                
-                // HEVC比H264多一个VPS
-                var vpsSize: Int = 0
-                var vpsCount: Int = 0
-                var vps: UnsafePointer<UInt8>?
-                var ppsSize: Int = 0
-                var ppsCount: Int = 0
-                var pps: UnsafePointer<UInt8>?
+    vc.writeCompressedFrame(frame: sampleBuffer)
+}
 
-                status = CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(format!, 0, &vps, &vpsSize, &vpsCount, &nalHeaderLength)
-                if status == noErr {
-                    print("HEVC vps: \(String(describing: vps)), vpsSize: \(vpsSize), vpsCount: \(vpsCount), NAL header length: \(nalHeaderLength)")
-                    status =  CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(format!, 1, &sps, &spsSize, &spsCount, &nalHeaderLength)
-                    if status == noErr {
-                        print("HEVC sps: \(String(describing: sps)), spsSize: \(spsSize), spsCount: \(spsCount), NAL header length: \(nalHeaderLength)")
-                        status = CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(format!, 2, &pps, &ppsSize, &ppsCount, &nalHeaderLength)
-                        if status == noErr {
-                            print("HEVC pps: \(String(describing: pps)), ppsSize: \(ppsSize), ppsCount: \(ppsCount), NAL header length: \(nalHeaderLength)")
-
-                            let vpsData: NSData = NSData(bytes: vps, length: vpsSize)
-                            let spsData: NSData = NSData(bytes: sps, length: spsSize)
-                            let ppsData: NSData = NSData(bytes: pps, length: ppsSize)
-                            
-                            vc.handle(sps: spsData, pps: ppsData, vps: vpsData)
-
-                        }
-                    }
-
-                }
-                
-            } else {
-                // H.264
-                if CMVideoFormatDescriptionGetH264ParameterSetAtIndex(format!,
-                                                                      0,
-                                                                      &sps,
-                                                                      &spsSize,
-                                                                      &spsCount,
-                                                                      &nalHeaderLength) == noErr {
-                    print("sps: \(String(describing: sps)), spsSize: \(spsSize), spsCount: \(spsCount), NAL header length: \(nalHeaderLength)")
-                    
-                    // pps
-                    var ppsSize: Int = 0
-                    var ppsCount: Int = 0
-                    var pps: UnsafePointer<UInt8>?
-                    
-                    if CMVideoFormatDescriptionGetH264ParameterSetAtIndex(format!,
-                                                                          1,
-                                                                          &pps,
-                                                                          &ppsSize,
-                                                                          &ppsCount,
-                                                                          &nalHeaderLength) == noErr {
-                        print("sps: \(String(describing: pps)), spsSize: \(ppsSize), spsCount: \(ppsCount), NAL header length: \(nalHeaderLength)")
-                        
-                        let spsData: NSData = NSData(bytes: sps, length: spsSize)
-                        let ppsData: NSData = NSData(bytes: pps, length: ppsSize)
-                        
-                        // save sps/pps to file
-                        // NOTE: 事实上，大多数情况下 sps/pps 不变/变化不大 或者 变化对视频数据产生的影响很小，
-                        // 因此，多数情况下你都可以只在文件头写入或视频流开头传输 sps/pps 数据
-                        vc.handle(sps: spsData, pps: ppsData)
-                    }
-                }
-            }
-        } // end of handle sps/pps
-        
-        // handle frame data
-        guard let dataBuffer = CMSampleBufferGetDataBuffer(sampleBuffer) else {
-            return
-        }
-        
-        var lengthAtOffset: Int = 0
-        var totalLength: Int = 0
-        var dataPointer: UnsafeMutablePointer<Int8>?
-        if CMBlockBufferGetDataPointer(dataBuffer, 0, &lengthAtOffset, &totalLength, &dataPointer) == noErr {
-            var bufferOffset: Int = 0
-            let AVCCHeaderLength = 4
-            
-            while bufferOffset < (totalLength - AVCCHeaderLength) {
-                var NALUnitLength: UInt32 = 0
-                // first four character is NALUnit length
-                memcpy(&NALUnitLength, dataPointer?.advanced(by: bufferOffset), AVCCHeaderLength)
-                
-                // big endian to host endian. in iOS it's little endian
-                NALUnitLength = CFSwapInt32BigToHost(NALUnitLength)
-                
-                let data: NSData = NSData(bytes: dataPointer?.advanced(by: bufferOffset + AVCCHeaderLength), length: Int(NALUnitLength))
-                vc.encode(data: data, isKeyFrame: keyFrame)
-                
-                // move forward to the next NAL Unit
-                bufferOffset += Int(AVCCHeaderLength)
-                bufferOffset += Int(NALUnitLength)
-            }
-        }
-    }
+func generateTmpMovFileURL() -> URL {
+    let outputFileName = ProcessInfo().globallyUniqueString
+    let outputFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent((outputFileName as NSString).appendingPathExtension("mov")!)
+    return URL(fileURLWithPath: outputFilePath)
 }
 
 class ViewController: UIViewController {
     
+    
     let captureSession = AVCaptureSession()
-    let sessionQueue = DispatchQueue(label: "capture.session.queue")
     var captureDevice: AVCaptureDevice? = nil
     let captureQueue = DispatchQueue(label: "videotoolbox.compression.capture")
     let compressionQueue = DispatchQueue(label: "videotoolbox.compression.compression")
+    let writingQueue = DispatchQueue(label: "videotoolbox.compression.writing")
+    
+    var lastFrameTime = CMTimeMake(0, 600)
     lazy var preview: AVCaptureVideoPreviewLayer = {
         let preview = AVCaptureVideoPreviewLayer(session: self.captureSession)
         preview.videoGravity = .resizeAspectFill
@@ -200,7 +95,8 @@ class ViewController: UIViewController {
     }()
     
     var compressionSession: VTCompressionSession?
-    var fileHandler: FileHandle?
+    var assetWriter:AVAssetWriter?
+    var assetWriterInput:AVAssetWriterInput?
     var isCapturing: Bool = false
     
     var windowOrientation: UIInterfaceOrientation {
@@ -210,14 +106,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.sessionQueue.async {
-            let path = NSTemporaryDirectory() + (H265 ? "/temp.h265" : "/temp.h264")
-            try? FileManager.default.removeItem(atPath: path)
-            if FileManager.default.createFile(atPath: path, contents: nil, attributes: nil) {
-                self.fileHandler = FileHandle(forWritingAtPath: path)
-            }
-            
-            
+        self.captureQueue.async {
             self.captureSession.beginConfiguration()
             
             defer {
@@ -226,22 +115,20 @@ class ViewController: UIViewController {
             
             
             self.captureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)!
-//            CameraUtil.setHighestVideoCaptureMode(with: self.captureDevice!)
             
             let input = try! AVCaptureDeviceInput(device: self.captureDevice!)
             if self.captureSession.canAddInput(input) {
                 self.captureSession.addInput(input)
             }
             
+            // AVCaptureDevice.activeFormat will give enough hint for output(pixel format, etc),
+            // no explicit setting here.
             let output = AVCaptureVideoDataOutput()
-            // YUV 420v
-//            output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
             output.setSampleBufferDelegate(self, queue: self.captureQueue)
             if self.captureSession.canAddOutput(output) {
                 self.captureSession.addOutput(output)
             }
             
-            // not a good method
             if let connection = output.connection(with: .video) {
                 if connection.isVideoOrientationSupported {
                     DispatchQueue.main.async {
@@ -257,9 +144,12 @@ class ViewController: UIViewController {
                     }
                 }
             }
+            
         }
         
-        self.sessionQueue.asyncAfter(deadline: .now() + 0.3) {
+        self.captureQueue.asyncAfter(deadline: .now() + 0.3) {
+            
+            
             self.captureSession.beginConfiguration()
             CameraUtil.setHighestVideoCaptureMode(with: self.captureDevice!)
             self.captureSession.commitConfiguration()
@@ -279,6 +169,26 @@ class ViewController: UIViewController {
 
         view.addSubview(button)
     }
+    
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return .all
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        let pv = self.preview
+        
+        if let videoPreviewLayerConnection = pv.connection {
+            let deviceOrientation = UIDevice.current.orientation
+            guard let newVideoOrientation = AVCaptureVideoOrientation(deviceOrientation: deviceOrientation),
+                deviceOrientation.isPortrait || deviceOrientation.isLandscape else {
+                    return
+            }
+            
+            videoPreviewLayerConnection.videoOrientation = newVideoOrientation
+        }
+    }
 }
 
 extension ViewController {
@@ -292,6 +202,26 @@ extension ViewController {
     
     func startCapture() {
         isCapturing = true
+        
+        self.writingQueue.async {
+            do {
+                let outputMov = generateTmpMovFileURL()
+                self.assetWriter = try AVAssetWriter(outputURL: outputMov, fileType: .mov)
+                //outputSettings = nil => no compression, buffer is in compressed state already.
+                self.assetWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: nil)
+                
+                if (self.assetWriter!.canAdd(self.assetWriterInput!)) {
+                    self.assetWriter?.add(self.assetWriterInput!)
+                } else {
+                    throw VideoCompressionError.NotSupported
+                }
+                
+                self.assetWriter?.startWriting()
+                self.assetWriter?.startSession(atSourceTime: self.lastFrameTime)
+            } catch {
+                print("can not init MOV writer. \(error)")
+            }
+        }
     }
     
     func stopCapture() {
@@ -301,15 +231,32 @@ extension ViewController {
             return
         }
         
-        VTCompressionSessionCompleteFrames(compressionSession, kCMTimeInvalid)
-        VTCompressionSessionInvalidate(compressionSession)
-        self.compressionSession = nil
+        self.captureQueue.async {
+            VTCompressionSessionCompleteFrames(compressionSession, kCMTimeInvalid)
+            VTCompressionSessionInvalidate(compressionSession)
+            self.compressionSession = nil
+        }
+        
+        self.writingQueue.async {
+            self.assetWriterInput?.markAsFinished()
+            self.assetWriter?.endSession(atSourceTime: self.lastFrameTime)
+            self.assetWriter?.finishWriting {
+                if (self.assetWriter?.status == .completed) {
+                    print("MOV file written ok. \(String(describing: self.assetWriter?.outputURL.fileSize()))MB")
+                } else {
+                    print("MOV file written with error: \(String(describing: self.assetWriter!.error))")
+                }
+                self.assetWriterInput = nil
+                self.assetWriter = nil
+            }
+        }
     }
 }
 
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     
     func dumpCMBufferInfo(_ sampleBuffer: CMSampleBuffer) {
+        
         if (frameCount % 120 != 1) {
             return
         }
@@ -336,6 +283,7 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
         }
         
         frameCount += 1
+        self.lastFrameTime = CMSampleBufferGetOutputPresentationTimeStamp(sampleBuffer)
         
         if compressionSession == nil {
             let width = CVPixelBufferGetWidth(pixelbuffer)
@@ -394,32 +342,23 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     }
     
-    func handle(sps: NSData, pps: NSData, vps: NSData? = nil) {
-        guard let fh = fileHandler else {
+    func writeCompressedFrame(frame sampleBuffer: CMSampleBuffer) {
+        
+        guard let writerInput = self.assetWriterInput else {
             return
         }
         
-        let headerData: NSData = NSData(bytes: NALUHeader, length: NALUHeader.count)
-        if let v = vps {
-            print("Got VPS data: \(v.length) bytes")
-            fh.write(headerData as Data)
-            fh.write(v as Data)
-        }
         
-        fh.write(headerData as Data)
-        fh.write(sps as Data)
-        fh.write(headerData as Data)
-        fh.write(pps as Data)
-    }
-    
-    func encode(data: NSData, isKeyFrame: Bool) {
-        guard let fh = fileHandler else {
-            return
+        writingQueue.sync {
+            defer {
+                let result = writerInput.append(sampleBuffer)
+                print("append buffer to writer good? \(frameCount):\(result)")
+            }
+            
+            while (!writerInput.isReadyForMoreMediaData) {
+                
+            }
         }
-        let headerData: NSData = NSData(bytes: NALUHeader, length: NALUHeader.count)
-        fh.write(headerData as Data)
-        fh.write(data as Data)
-        print("Got Frame data, head: \(headerData.length) bytes, data: \(data.length) bytes ")
     }
 }
 

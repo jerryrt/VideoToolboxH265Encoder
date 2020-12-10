@@ -7,27 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DFEFC3042581153600311A51 /* CameraUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEFC3032581153600311A51 /* CameraUtil.swift */; };
-		DFEFC3072581157F00311A51 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEFC3062581157F00311A51 /* common.swift */; };
-		F210EAEB1F3EE212006E9756 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F210EAEA1F3EE212006E9756 /* AppDelegate.swift */; };
-		F210EAED1F3EE212006E9756 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F210EAEC1F3EE212006E9756 /* ViewController.swift */; };
+		DF40E3E7258247400094FECD /* Base.lproj in Resources */ = {isa = PBXBuildFile; fileRef = DF40E3E0258247400094FECD /* Base.lproj */; };
+		DF40E3E8258247400094FECD /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF40E3E1258247400094FECD /* common.swift */; };
+		DF40E3E9258247400094FECD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF40E3E2258247400094FECD /* AppDelegate.swift */; };
+		DF40E3EA258247400094FECD /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF40E3E3258247400094FECD /* ViewController.swift */; };
+		DF40E3EB258247400094FECD /* CVPixelBuffer+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF40E3E4258247400094FECD /* CVPixelBuffer+Extension.swift */; };
+		DF40E3EC258247400094FECD /* MediaUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF40E3E5258247400094FECD /* MediaUtil.swift */; };
+		DF40E3ED258247400094FECD /* CameraUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF40E3E6258247400094FECD /* CameraUtil.swift */; };
 		F210EAF01F3EE212006E9756 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F210EAEE1F3EE212006E9756 /* Main.storyboard */; };
 		F210EAF21F3EE212006E9756 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F210EAF11F3EE212006E9756 /* Assets.xcassets */; };
 		F210EAF51F3EE212006E9756 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F210EAF31F3EE212006E9756 /* LaunchScreen.storyboard */; };
-		F210EB191F416083006E9756 /* CVPixelBuffer+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F210EB181F416083006E9756 /* CVPixelBuffer+Extension.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		DFEFC3032581153600311A51 /* CameraUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraUtil.swift; sourceTree = "<group>"; };
-		DFEFC3062581157F00311A51 /* common.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
+		DF40E3DF258247400094FECD /* VideoToolboxCompression-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VideoToolboxCompression-Bridging-Header.h"; sourceTree = "<group>"; };
+		DF40E3E0258247400094FECD /* Base.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Base.lproj; path = VideoToolboxCompression/Base.lproj; sourceTree = "<group>"; };
+		DF40E3E1258247400094FECD /* common.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = common.swift; path = VideoToolboxCompression/common.swift; sourceTree = "<group>"; };
+		DF40E3E2258247400094FECD /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = VideoToolboxCompression/AppDelegate.swift; sourceTree = "<group>"; };
+		DF40E3E3258247400094FECD /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = VideoToolboxCompression/ViewController.swift; sourceTree = "<group>"; };
+		DF40E3E4258247400094FECD /* CVPixelBuffer+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CVPixelBuffer+Extension.swift"; path = "VideoToolboxCompression/CVPixelBuffer+Extension.swift"; sourceTree = "<group>"; };
+		DF40E3E5258247400094FECD /* MediaUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaUtil.swift; path = VideoToolboxCompression/MediaUtil.swift; sourceTree = "<group>"; };
+		DF40E3E6258247400094FECD /* CameraUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CameraUtil.swift; path = VideoToolboxCompression/CameraUtil.swift; sourceTree = "<group>"; };
 		F210EAE71F3EE212006E9756 /* VideoToolboxCompression.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoToolboxCompression.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F210EAEA1F3EE212006E9756 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		F210EAEC1F3EE212006E9756 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		F210EAEF1F3EE212006E9756 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		F210EAF11F3EE212006E9756 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F210EAF41F3EE212006E9756 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F210EAF61F3EE212006E9756 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		F210EB181F416083006E9756 /* CVPixelBuffer+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+Extension.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,8 +49,19 @@
 		F210EADE1F3EE212006E9756 = {
 			isa = PBXGroup;
 			children = (
-				F210EAE91F3EE212006E9756 /* VideoToolboxCompression */,
+				DF40E3E2258247400094FECD /* AppDelegate.swift */,
+				DF40E3E0258247400094FECD /* Base.lproj */,
+				DF40E3E6258247400094FECD /* CameraUtil.swift */,
+				DF40E3E1258247400094FECD /* common.swift */,
+				DF40E3E4258247400094FECD /* CVPixelBuffer+Extension.swift */,
+				DF40E3E5258247400094FECD /* MediaUtil.swift */,
+				DF40E3E3258247400094FECD /* ViewController.swift */,
+				F210EAEE1F3EE212006E9756 /* Main.storyboard */,
+				F210EAF11F3EE212006E9756 /* Assets.xcassets */,
+				F210EAF31F3EE212006E9756 /* LaunchScreen.storyboard */,
+				F210EAF61F3EE212006E9756 /* Info.plist */,
 				F210EAE81F3EE212006E9756 /* Products */,
+				DF40E3DF258247400094FECD /* VideoToolboxCompression-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -55,22 +71,6 @@
 				F210EAE71F3EE212006E9756 /* VideoToolboxCompression.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		F210EAE91F3EE212006E9756 /* VideoToolboxCompression */ = {
-			isa = PBXGroup;
-			children = (
-				DFEFC3062581157F00311A51 /* common.swift */,
-				DFEFC3032581153600311A51 /* CameraUtil.swift */,
-				F210EAEA1F3EE212006E9756 /* AppDelegate.swift */,
-				F210EAEC1F3EE212006E9756 /* ViewController.swift */,
-				F210EB181F416083006E9756 /* CVPixelBuffer+Extension.swift */,
-				F210EAEE1F3EE212006E9756 /* Main.storyboard */,
-				F210EAF11F3EE212006E9756 /* Assets.xcassets */,
-				F210EAF31F3EE212006E9756 /* LaunchScreen.storyboard */,
-				F210EAF61F3EE212006E9756 /* Info.plist */,
-			);
-			path = VideoToolboxCompression;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -100,11 +100,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0900;
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 1220;
 				ORGANIZATIONNAME = tomisacat;
 				TargetAttributes = {
 					F210EAE61F3EE212006E9756 = {
 						CreatedOnToolsVersion = 9.0;
+						LastSwiftMigration = 1220;
 					};
 				};
 			};
@@ -133,6 +134,7 @@
 			files = (
 				F210EAF51F3EE212006E9756 /* LaunchScreen.storyboard in Resources */,
 				F210EAF21F3EE212006E9756 /* Assets.xcassets in Resources */,
+				DF40E3E7258247400094FECD /* Base.lproj in Resources */,
 				F210EAF01F3EE212006E9756 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -144,11 +146,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F210EAED1F3EE212006E9756 /* ViewController.swift in Sources */,
-				F210EB191F416083006E9756 /* CVPixelBuffer+Extension.swift in Sources */,
-				DFEFC3042581153600311A51 /* CameraUtil.swift in Sources */,
-				F210EAEB1F3EE212006E9756 /* AppDelegate.swift in Sources */,
-				DFEFC3072581157F00311A51 /* common.swift in Sources */,
+				DF40E3ED258247400094FECD /* CameraUtil.swift in Sources */,
+				DF40E3EA258247400094FECD /* ViewController.swift in Sources */,
+				DF40E3EB258247400094FECD /* CVPixelBuffer+Extension.swift in Sources */,
+				DF40E3EC258247400094FECD /* MediaUtil.swift in Sources */,
+				DF40E3E9258247400094FECD /* AppDelegate.swift in Sources */,
+				DF40E3E8258247400094FECD /* common.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,6 +191,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -195,8 +199,10 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -222,7 +228,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -245,6 +251,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -252,8 +259,10 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -273,7 +282,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -285,12 +294,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = DPCKXU7H8D;
-				INFOPLIST_FILE = VideoToolboxCompression/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.tomisacat.VideoToolboxCompression;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "VideoToolboxCompression-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -300,12 +312,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				DEVELOPMENT_TEAM = DPCKXU7H8D;
-				INFOPLIST_FILE = VideoToolboxCompression/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.tomisacat.VideoToolboxCompression;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "VideoToolboxCompression-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

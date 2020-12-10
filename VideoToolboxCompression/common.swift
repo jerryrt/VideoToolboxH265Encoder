@@ -113,3 +113,35 @@ extension AVCaptureDevice.DiscoverySession {
         return uniqueDevicePositions.count
     }
 }
+
+extension URL {
+    func fileSize() -> Double {
+        var fileSize: Double = 0.0
+        var fileSizeValue = 0.0
+        try? fileSizeValue = (self.resourceValues(forKeys: [URLResourceKey.fileSizeKey]).allValues.first?.value as! Double?)!
+        if fileSizeValue > 0.0 {
+            fileSize = (Double(fileSizeValue) / (1024 * 1024))
+        }
+        return fileSize
+    }
+}
+
+extension URL {
+    public func bytesSizeIfAvailable() -> Int {
+        do {
+            let resources = try self.resourceValues(forKeys:[.fileSizeKey])
+            let fileSize = resources.fileSize!
+            return fileSize
+        } catch {
+            return -1
+        }
+    }
+    
+    var typeIdentifier: String? {
+        return (try? resourceValues(forKeys: [.typeIdentifierKey]))?.typeIdentifier
+    }
+    
+    var localizedName: String? {
+        return (try? resourceValues(forKeys: [.localizedNameKey]))?.localizedName
+    }
+}
