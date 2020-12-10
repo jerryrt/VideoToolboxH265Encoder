@@ -22,6 +22,7 @@ fileprivate var NALUHeader: [UInt8] = [0, 0, 0, 1]
 let H265 = true
 var frameCount = 0
 
+
 // 事实上，使用 VideoToolbox 硬编码的用途大多是推流编码后的 NAL Unit 而不是写入到本地一个 H.264 文件
 // 如果你想保存到本地，使用 AVAssetWriter 是一个更好的选择，它内部也是会硬编码的
 func compressionOutputCallback(outputCallbackRefCon: UnsafeMutableRawPointer?,
@@ -66,6 +67,7 @@ func compressionOutputCallback(outputCallbackRefCon: UnsafeMutableRawPointer?,
     
     let vc: ViewController = Unmanaged.fromOpaque(outputCallbackRefCon!).takeUnretainedValue()
     
+    print("encoded frame: \(frameCount)")
     if let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, true) {
         print("attachments: \(attachments)")
         
@@ -366,10 +368,11 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             // 关键帧间隔
             VTSessionSetProperty(c, kVTCompressionPropertyKey_MaxKeyFrameInterval, 1 as CFTypeRef)
             // 比特率和速率
-            let bitRate =  width * height * 2 * 32
-            print("target bit rate: \(bitRate)")
-            VTSessionSetProperty(c, kVTCompressionPropertyKey_AverageBitRate, bitRate as CFTypeRef)
-//            VTSessionSetProperty(c, kVTCompressionPropertyKey_DataRateLimits, [width * height * 2 * 4, 1] as CFArray)
+//            let bitRate =  width * height * 4 * 32
+//            print("target bit rate: \(bitRate/1000/1000)Mbps")
+//            VTSessionSetProperty(c, kVTCompressionPropertyKey_AverageBitRate, bitRate as CFTypeRef)
+            VTSessionSetProperty(c, kVTCompressionPropertyKey_Quality, 1.0 as CFTypeRef)
+//            VTSessionSetProperty(c, kVTCompressionPropertyKey_DataRateLimits, [200*1024*1024, 1] as CFArray)
             
             VTCompressionSessionPrepareToEncodeFrames(c)
         }
@@ -416,6 +419,7 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
         let headerData: NSData = NSData(bytes: NALUHeader, length: NALUHeader.count)
         fh.write(headerData as Data)
         fh.write(data as Data)
+        print("Got Frame data, head: \(headerData.length) bytes, data: \(data.length) bytes ")
     }
 }
 
