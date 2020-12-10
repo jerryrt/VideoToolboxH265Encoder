@@ -20,6 +20,7 @@ import VideoToolbox
 fileprivate var NALUHeader: [UInt8] = [0, 0, 0, 1]
 
 let H265 = true
+var frameCount = 0
 
 // 事实上，使用 VideoToolbox 硬编码的用途大多是推流编码后的 NAL Unit 而不是写入到本地一个 H.264 文件
 // 如果你想保存到本地，使用 AVAssetWriter 是一个更好的选择，它内部也是会硬编码的
@@ -97,7 +98,7 @@ func compressionOutputCallback(outputCallbackRefCon: UnsafeMutableRawPointer?,
                 status = CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(format!, 0, &vps, &vpsSize, &vpsCount, &nalHeaderLength)
                 if status == noErr {
                     print("HEVC vps: \(String(describing: vps)), vpsSize: \(vpsSize), vpsCount: \(vpsCount), NAL header length: \(nalHeaderLength)")
-                    status =           CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(format!, 1, &sps, &spsSize, &spsCount, &nalHeaderLength)
+                    status =  CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(format!, 1, &sps, &spsSize, &spsCount, &nalHeaderLength)
                     if status == noErr {
                         print("HEVC sps: \(String(describing: sps)), spsSize: \(spsSize), spsCount: \(spsCount), NAL header length: \(nalHeaderLength)")
                         status = CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(format!, 2, &pps, &ppsSize, &ppsCount, &nalHeaderLength)
@@ -184,6 +185,8 @@ func compressionOutputCallback(outputCallbackRefCon: UnsafeMutableRawPointer?,
 class ViewController: UIViewController {
     
     let captureSession = AVCaptureSession()
+    let sessionQueue = DispatchQueue(label: "capture.session.queue")
+    var captureDevice: AVCaptureDevice? = nil
     let captureQueue = DispatchQueue(label: "videotoolbox.compression.capture")
     let compressionQueue = DispatchQueue(label: "videotoolbox.compression.compression")
     lazy var preview: AVCaptureVideoPreviewLayer = {
@@ -198,37 +201,69 @@ class ViewController: UIViewController {
     var fileHandler: FileHandle?
     var isCapturing: Bool = false
     
+    var windowOrientation: UIInterfaceOrientation {
+        return view.window?.windowScene?.interfaceOrientation ?? .unknown
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let path = NSTemporaryDirectory() + (H265 ? "/temp.h265" : "/temp.h264")
-        try? FileManager.default.removeItem(atPath: path)
-        if FileManager.default.createFile(atPath: path, contents: nil, attributes: nil) {
-            fileHandler = FileHandle(forWritingAtPath: path)
-        }
-        
-        let device = AVCaptureDevice.default(for: .video)!
-        let input = try! AVCaptureDeviceInput(device: device)
-        if captureSession.canAddInput(input) {
-            captureSession.addInput(input)
-        }
-        captureSession.sessionPreset = .high
-        let output = AVCaptureVideoDataOutput()
-        // YUV 420v
-        output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
-        output.setSampleBufferDelegate(self, queue: captureQueue)
-        if captureSession.canAddOutput(output) {
-            captureSession.addOutput(output)
-        }
-        
-        // not a good method
-        if let connection = output.connection(with: .video) {
-            if connection.isVideoOrientationSupported {
-                connection.videoOrientation = AVCaptureVideoOrientation(rawValue: UIApplication.shared.statusBarOrientation.rawValue)!
+        self.sessionQueue.async {
+            let path = NSTemporaryDirectory() + (H265 ? "/temp.h265" : "/temp.h264")
+            try? FileManager.default.removeItem(atPath: path)
+            if FileManager.default.createFile(atPath: path, contents: nil, attributes: nil) {
+                self.fileHandler = FileHandle(forWritingAtPath: path)
+            }
+            
+            
+            self.captureSession.beginConfiguration()
+            
+            defer {
+                self.captureSession.commitConfiguration()
+            }
+            
+            
+            self.captureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)!
+//            CameraUtil.setHighestVideoCaptureMode(with: self.captureDevice!)
+            
+            let input = try! AVCaptureDeviceInput(device: self.captureDevice!)
+            if self.captureSession.canAddInput(input) {
+                self.captureSession.addInput(input)
+            }
+            
+            let output = AVCaptureVideoDataOutput()
+            // YUV 420v
+//            output.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
+            output.setSampleBufferDelegate(self, queue: self.captureQueue)
+            if self.captureSession.canAddOutput(output) {
+                self.captureSession.addOutput(output)
+            }
+            
+            // not a good method
+            if let connection = output.connection(with: .video) {
+                if connection.isVideoOrientationSupported {
+                    DispatchQueue.main.async {
+                        var initialVideoOrientation: AVCaptureVideoOrientation = .portrait
+                        if self.windowOrientation != .unknown {
+                            if let videoOrientation = AVCaptureVideoOrientation(interfaceOrientation: self.windowOrientation) {
+                                initialVideoOrientation = videoOrientation
+                            }
+                        }
+                        
+                        connection.videoOrientation = AVCaptureVideoOrientation(rawValue: initialVideoOrientation.rawValue)!
+                        
+                    }
+                }
             }
         }
         
-        captureSession.startRunning()
+        self.sessionQueue.asyncAfter(deadline: .now() + 0.3) {
+            self.captureSession.beginConfiguration()
+            CameraUtil.setHighestVideoCaptureMode(with: self.captureDevice!)
+            self.captureSession.commitConfiguration()
+            
+            self.captureSession.startRunning()
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -271,19 +306,34 @@ extension ViewController {
 }
 
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
+    
+    func dumpCMBufferInfo(_ sampleBuffer: CMSampleBuffer) {
+        if (frameCount % 120 != 1) {
+            return
+        }
+        
+        guard let pixelbuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
+//
+//        if CVPixelBufferIsPlanar(pixelbuffer) {
+//            print("planar format type: \(CVPixelBufferGetPixelFormatType(pixelbuffer).codeString)")
+//        }
+//
+//         var desc: CMFormatDescription?
+//         CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, pixelbuffer, &desc)
+//         let extensions = CMFormatDescriptionGetExtensions(desc!)
+//         print("format extensions: \(extensions!)")
+        
+        print("dump buffer info: \(pixelbuffer)")
+    }
+    
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelbuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
         
-//        if CVPixelBufferIsPlanar(pixelbuffer) {
-//            print("planar: \(CVPixelBufferGetPixelFormatType(pixelbuffer))")
-//        }
-//
-//        var desc: CMFormatDescription?
-//        CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, pixelbuffer, &desc)
-//        let extensions = CMFormatDescriptionGetExtensions(desc!)
-//        print("extensions: \(extensions!)")
+        frameCount += 1
         
         if compressionSession == nil {
             let width = CVPixelBufferGetWidth(pixelbuffer)
@@ -307,18 +357,19 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             
             // set profile to Main
             if H265 {
-                VTSessionSetProperty(c, kVTCompressionPropertyKey_ProfileLevel,
-                                     kVTProfileLevel_HEVC_Main_AutoLevel)
+                VTSessionSetProperty(c, kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_HEVC_Main10_AutoLevel)
             } else {
                 VTSessionSetProperty(c, kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_H264_Main_AutoLevel)
             }
             // capture from camera, so it's real time
             VTSessionSetProperty(c, kVTCompressionPropertyKey_RealTime, true as CFTypeRef)
             // 关键帧间隔
-            VTSessionSetProperty(c, kVTCompressionPropertyKey_MaxKeyFrameInterval, 10 as CFTypeRef)
+            VTSessionSetProperty(c, kVTCompressionPropertyKey_MaxKeyFrameInterval, 1 as CFTypeRef)
             // 比特率和速率
-            VTSessionSetProperty(c, kVTCompressionPropertyKey_AverageBitRate, width * height * 2 * 32 as CFTypeRef)
-            VTSessionSetProperty(c, kVTCompressionPropertyKey_DataRateLimits, [width * height * 2 * 4, 1] as CFArray)
+            let bitRate =  width * height * 2 * 32
+            print("target bit rate: \(bitRate)")
+            VTSessionSetProperty(c, kVTCompressionPropertyKey_AverageBitRate, bitRate as CFTypeRef)
+//            VTSessionSetProperty(c, kVTCompressionPropertyKey_DataRateLimits, [width * height * 2 * 4, 1] as CFArray)
             
             VTCompressionSessionPrepareToEncodeFrames(c)
         }
