@@ -19,7 +19,7 @@ import VideoToolbox
 
 fileprivate var NALUHeader: [UInt8] = [0, 0, 0, 1]
 
-let H265 = true
+let H265 = false
 var frameCount = 0
 
 // 事实上，使用 VideoToolbox 硬编码的用途大多是推流编码后的 NAL Unit 而不是写入到本地一个 H.264 文件
@@ -95,6 +95,8 @@ class ViewController: UIViewController {
     }()
     
     var compressionSession: VTCompressionSession?
+    
+    var outputAssetURL:URL?
     var assetWriter:AVAssetWriter?
     var assetWriterInput:AVAssetWriterInput?
     var isCapturing: Bool = false
@@ -115,6 +117,8 @@ class ViewController: UIViewController {
             
             
             self.captureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)!
+            
+            CameraUtil.dumpAllFormats(with: self.captureDevice!.formats)
             
             let input = try! AVCaptureDeviceInput(device: self.captureDevice!)
             if self.captureSession.canAddInput(input) {
@@ -151,7 +155,25 @@ class ViewController: UIViewController {
             
             
             self.captureSession.beginConfiguration()
-            CameraUtil.setHighestVideoCaptureMode(with: self.captureDevice!)
+            
+//            CameraUtil.setHighestVideoCaptureMode(with: self.captureDevice!)
+            
+            do {
+                try self.captureDevice!.lockForConfiguration()
+                defer {
+                    self.captureDevice!.unlockForConfiguration()
+                }
+                
+                if let f_4k_hlg = CameraUtil.find4kHDR_HLG_BT2020_Format(with: self.captureDevice!.formats) {
+                    self.captureDevice!.activeFormat = f_4k_hlg
+                } else {
+                    throw VideoCompressionError.NotSupported
+                }
+                print("camera format set to: \(self.captureDevice!.activeFormat)")
+            } catch {
+                print("configure camera failed: \(error)")
+            }
+            
             self.captureSession.commitConfiguration()
             
             self.captureSession.startRunning()
@@ -205,9 +227,19 @@ extension ViewController {
         
         self.writingQueue.async {
             do {
-                let outputMov = generateTmpMovFileURL()
-                self.assetWriter = try AVAssetWriter(outputURL: outputMov, fileType: .mov)
+                self.outputAssetURL = generateTmpMovFileURL()
+                self.assetWriter = try AVAssetWriter(outputURL: self.outputAssetURL!, fileType: .mov)
                 //outputSettings = nil => no compression, buffer is in compressed state already.
+                
+//                var settings:[String : Any] = [:]
+//                var colorProps:[String: Any] = [:]
+//
+//                colorProps[AVVideoColorPrimariesKey] = AVVideoColorPrimaries_ITU_R_2020
+//                colorProps[AVVideoTransferFunctionKey] = AVVideoTransferFunction_ITU_R_2100_HLG
+//                colorProps[AVVideoYCbCrMatrixKey] = AVVideoYCbCrMatrix_ITU_R_2020
+//
+//                settings[AVVideoColorPropertiesKey] = colorProps
+                
                 self.assetWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: nil)
                 
                 if (self.assetWriter!.canAdd(self.assetWriterInput!)) {
@@ -242,12 +274,17 @@ extension ViewController {
             self.assetWriter?.endSession(atSourceTime: self.lastFrameTime)
             self.assetWriter?.finishWriting {
                 if (self.assetWriter?.status == .completed) {
-                    print("MOV file written ok. \(String(describing: self.assetWriter?.outputURL.fileSize()))MB")
+                    print("MOV file written ok. \(self.outputAssetURL!.fileSize()))MB")
                 } else {
                     print("MOV file written with error: \(String(describing: self.assetWriter!.error))")
                 }
                 self.assetWriterInput = nil
                 self.assetWriter = nil
+                
+                
+                DispatchQueue.main.async {
+                    MediaUtil.systemShareAction(url: self.outputAssetURL!, from: self.view)
+                }
             }
         }
     }
@@ -256,10 +293,10 @@ extension ViewController {
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     
     func dumpCMBufferInfo(_ sampleBuffer: CMSampleBuffer) {
-        
-        if (frameCount % 120 != 1) {
-            return
-        }
+//
+//        if (frameCount % 120 != 1) {
+//            return
+//        }
         
         guard let pixelbuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
@@ -309,7 +346,7 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
             if H265 {
                 VTSessionSetProperty(c, kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_HEVC_Main10_AutoLevel)
             } else {
-                VTSessionSetProperty(c, kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_H264_Main_AutoLevel)
+                VTSessionSetProperty(c, kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_H264_High_AutoLevel)
             }
             // capture from camera, so it's real time
             VTSessionSetProperty(c, kVTCompressionPropertyKey_RealTime, true as CFTypeRef)
@@ -319,10 +356,18 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
 //            let bitRate =  width * height * 4 * 32
 //            print("target bit rate: \(bitRate/1000/1000)Mbps")
 //            VTSessionSetProperty(c, kVTCompressionPropertyKey_AverageBitRate, bitRate as CFTypeRef)
-            VTSessionSetProperty(c, kVTCompressionPropertyKey_Quality, 1.0 as CFTypeRef)
-//            VTSessionSetProperty(c, kVTCompressionPropertyKey_DataRateLimits, [200*1024*1024, 1] as CFArray)
+//            VTSessionSetProperty(c, kVTCompressionPropertyKey_Quality, 1.0 as CFTypeRef)
+            VTSessionSetProperty(c, kVTCompressionPropertyKey_DataRateLimits, [10*1024*1024, 1] as CFArray)
+            
+            VTSessionSetProperty(c, kVTCompressionPropertyKey_ColorPrimaries, kCMFormatDescriptionColorPrimaries_ITU_R_2020)
+            VTSessionSetProperty(c, kVTCompressionPropertyKey_TransferFunction, kCMFormatDescriptionTransferFunction_ITU_R_2100_HLG)
+            VTSessionSetProperty(c, kVTCompressionPropertyKey_YCbCrMatrix, kCMFormatDescriptionYCbCrMatrix_ITU_R_2020)
+            VTSessionSetProperty(c, kCMFormatDescriptionExtension_FullRangeVideo, false as CFTypeRef)
+            
             
             VTCompressionSessionPrepareToEncodeFrames(c)
+            
+            self.dumpCMBufferInfo(sampleBuffer)
         }
         
         guard let c = compressionSession else {

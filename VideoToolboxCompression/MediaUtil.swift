@@ -110,7 +110,7 @@ class MediaUtil : NSObject {
         }
         
         print("color space for frame: \(String(describing: thumbnailImageRef.colorSpace))")
-        print("bits per componet for frame: \(String(describing: thumbnailImageRef.bitsPerComponent))")
+        print("bits per component for frame: \(String(describing: thumbnailImageRef.bitsPerComponent))")
         print("bits per pixel for frame: \(String(describing: thumbnailImageRef.bitsPerPixel))")
         return UIImage(cgImage: thumbnailImageRef)
     }

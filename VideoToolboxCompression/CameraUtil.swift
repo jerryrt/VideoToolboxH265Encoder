@@ -22,7 +22,7 @@ import AVFoundation
 
 class CameraUtil {
     
-    class func formatColorSpaceInfo(f:AVCaptureDevice.Format) -> String {
+    class func formatColorSpaceInfo(_ f:AVCaptureDevice.Format) -> String {
         var out = "["
         for c in f.supportedColorSpaces {
             if (c == AVCaptureColorSpace.sRGB) {
@@ -45,10 +45,14 @@ class CameraUtil {
         var out = ""
         
         for f in formats {
-            out =  "\(out)\(String(describing: f))\n"
+            out =  "\(out)\(String(describing: f)):\(formatColorSpaceInfo(f))\n"
         }
         
         return out
+    }
+    
+    class func dumpAllFormats(with formats:Array<AVCaptureDevice.Format>) {
+        print(formatCaptureFormats(with: formats))
     }
     
     
@@ -64,8 +68,6 @@ class CameraUtil {
                 continue
             }
             
-//            log.debug("dump format obj: \(f)")
-//            log.debug("dump descriptor: \(fDesc)")
             
             for c in f.supportedColorSpaces {
 //                log.debug("dump color space: \(c.rawValue)")
@@ -105,6 +107,8 @@ class CameraUtil {
                 videoDevice.activeFormat = f_4k_hlg
             } else if let f_4k_p3 = CameraUtil.find4kHDR_P3D65_Format(with: videoDevice.formats) {
                 videoDevice.activeFormat = f_4k_p3
+            } else {
+                throw VideoCompressionError.NotSupported
             }
             videoDevice.unlockForConfiguration()
             print("camera format set to: \(videoDevice.activeFormat)")
@@ -112,4 +116,5 @@ class CameraUtil {
             print("configure camera failed: \(error)")
         }
     }
+    
 }
